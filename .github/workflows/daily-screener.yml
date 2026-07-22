@@ -16,9 +16,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Ver estructura del repo
-        run: ls -R . | head -60
-
       - name: Install dependencies
         run: pip install yfinance pandas numpy scipy requests lxml python-dotenv
 
@@ -27,7 +24,15 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          PKG=$(find . -type d -name nasdaq_screener | head -1)
-          echo "Paquete encontrado en: $PKG"
-          cd "$(dirname "$PKG")"
+          SRC=$(find . -name run_daily.py -not -path "./.git/*" | head -1)
+          if [ -z "$SRC" ]; then echo "ERROR: no aparece run_daily.py"; ls -R .; exit 1; fi
+          SRCDIR=$(dirname "$SRC")
+          echo "Archivos del motor en: $SRCDIR"
+          if [ "$(basename "$SRCDIR")" = "nasdaq_screener" ]; then
+            cd "$(dirname "$SRCDIR")"
+          else
+            mkdir -p /tmp/app/nasdaq_screener
+            cp "$SRCDIR"/*.py /tmp/app/nasdaq_screener/
+            cd /tmp/app
+          fi
           python -m nasdaq_screener.run_daily
