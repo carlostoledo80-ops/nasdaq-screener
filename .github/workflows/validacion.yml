@@ -1,0 +1,39 @@
+name: validacion-walk-forward
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy scipy requests lxml python-dotenv
+
+      - name: Ejecutar validacion
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          SRC=$(find . -name run_daily.py -not -path "./.git/*" | head -1)
+          if [ -z "$SRC" ]; then echo "ERROR: no aparece run_daily.py"; ls -R .; exit 1; fi
+          SRCDIR=$(dirname "$SRC")
+          if [ "$(basename "$SRCDIR")" = "nasdaq_screener" ]; then
+            APP="$(dirname "$SRCDIR")"
+          else
+            mkdir -p /tmp/app/nasdaq_screener
+            cp "$SRCDIR"/*.py /tmp/app/nasdaq_screener/
+            APP=/tmp/app
+          fi
+          VAL=$(find . -name validar.py -not -path "./.git/*" | head -1)
+          if [ -z "$VAL" ]; then echo "ERROR: no aparece validar.py"; exit 1; fi
+          cp "$VAL" "$APP"/validar.py
+          cd "$APP"
+          python validar.py
