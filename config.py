@@ -57,8 +57,7 @@ class Config:
     # is a sane default; do not crank this up without watching n collapse.
     active_features: tuple[str, ...] = (
         "gap_bin",          # today's premarket gap vs prior close, bucketed
-        "trend_bin",        # 5-day momentum bucket
-        "vol_regime_bin",   # realized-vol regime (ATR%), bucketed
+
     )
     # Optional extras you can add to active_features:
     #   "rsi_bin", "range_pos_bin", "dow" (day of week), "volume_bin"
