@@ -16,6 +16,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Ver estructura del repo
+        run: ls -R . | head -60
+
       - name: Install dependencies
         run: pip install yfinance pandas numpy scipy requests lxml python-dotenv
 
@@ -23,4 +26,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python -m nasdaq_screener.run_daily
+        run: |
+          PKG=$(find . -type d -name nasdaq_screener | head -1)
+          echo "Paquete encontrado en: $PKG"
+          cd "$(dirname "$PKG")"
+          python -m nasdaq_screener.run_daily
